@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Copyright 2012-2013 The Open Source Electronic Health Record Agent
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+
+<blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:jaxws="http://cxf.apache.org/blueprint/jaxws"
+    xmlns:cxf="http://cxf.apache.org/blueprint/core"
+    xmlns:camel="http://camel.apache.org/schema/blueprint"
+    xmlns:camel-cxf="http://camel.apache.org/schema/blueprint/cxf"
+    xmlns:cm="http://aries.apache.org/blueprint/xmlns/blueprint-cm/v1.0.0"
+    xsi:schemaLocation="
+      http://www.osgi.org/xmlns/blueprint/v1.0.0 http://www.osgi.org/xmlns/blueprint/v1.0.0/blueprint.xsd
+      http://cxf.apache.org/blueprint/jaxws http://cxf.apache.org/schemas/blueprint/jaxws.xsd
+      http://cxf.apache.org/blueprint/core http://cxf.apache.org/schemas/blueprint/core.xsd
+      http://camel.apache.org/schema/blueprint http://camel.apache.org/schema/blueprint/camel-blueprint.xsd
+      http://camel.apache.org/schema/blueprint/cxf http://camel.apache.org/schema/blueprint/cxf/camel-cxf.xsd
+      http://aries.apache.org/blueprint/xmlns/blueprint-cm/v1.0.0 http://aries.apache.org/schemas/blueprint-cm/blueprint-cm-1.0.0.xsd">
+
+  <!-- blueprint property placeholder -->
+  <cm:property-placeholder persistent-id="org.osehra.vista" />
+
+  <bean id="rpc-in" class="org.osehra.vista.camel.component.RpcServerPipelineFactory">
+    <argument><null /></argument>
+  </bean>
+  <bean id="rpc-out" class="org.osehra.vista.camel.component.RpcClientPipelineFactory">
+    <argument><null /></argument>
+  </bean>
+
+  <!-- Camel processing rules -->
+  <camelContext id="vista-soa" xmlns="http://camel.apache.org/schema/blueprint">
+
+    <route id="camel-rpc">
+      <from uri="netty:tcp://0.0.0.0:{{vistarpc.local}}?serverPipelineFactory=#rpc-in&amp;sync=true" />
+      <to uri="log:org.osehra.vista.camel?level=INFO" />
+      <threads poolSize="4" maxPoolSize="8">
+        <to uri="netty:tcp://{{vista.host}}:{{vistarpc.remote}}?clientPipelineFactory=#rpc-out&amp;sync=true" />
+      </threads>
+      <to uri="log:org.osehra.vista.camel?level=INFO" />
+    </route>
+
+  </camelContext>
+
+</blueprint>

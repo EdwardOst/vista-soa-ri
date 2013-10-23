@@ -1,0 +1,21 @@
+# build artifacts
+target
+*~
+*.orig
+*.rej
+*.swp
+*.local
+.DS_Store
+
+# ide artifacts
+.project
+.classpath
+.settings
+.metadata
+.checkstyle
+.ruleset
+.pmd
+*.iml
+*.ipr
+*.iws
+
