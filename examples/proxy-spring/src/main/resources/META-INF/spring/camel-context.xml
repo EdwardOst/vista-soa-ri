@@ -28,8 +28,8 @@
     <propertyPlaceholder id="vista-properties" location="classpath:vista.properties" />
 
     <route id="vista-example-proxy-spring">
-      <from uri="vista:localhost:9200" />
-      <to uri="log:FOO" />
+      <from uri="vista:{{vista.local.host}}:{{vista.local.port}}" />
+      <to uri="vista:{{vista.remote.host}}:{{vista.remote.port}}" />
     </route>
   </camelContext>
 
