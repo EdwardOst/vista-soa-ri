@@ -60,6 +60,7 @@
     <module>camel</module>
     <module>osgi</module>
     <module>war</module>
+    <module>examples</module>
   </modules>
 
   <dependencyManagement>
@@ -83,6 +84,11 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-core</artifactId>
+        <version>${camel.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.camel</groupId>
+        <artifactId>camel-spring</artifactId>
         <version>${camel.version}</version>
       </dependency>
       <dependency>
@@ -176,6 +182,11 @@
           <configuration>
             <downloadSources>true</downloadSources>
           </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.camel</groupId>
+          <artifactId>camel-maven-plugin</artifactId>
+          <version>${project.version}</version>
         </plugin>
       </plugins>
     </pluginManagement>

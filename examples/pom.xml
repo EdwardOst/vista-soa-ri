@@ -28,36 +28,14 @@
     <version>0.9-SNAPSHOT</version>
   </parent>
 
-  <artifactId>vista-rpc</artifactId>
-  <packaging>bundle</packaging>
-  <name>VistA :: SOA :: RPC</name>
+  <groupId>org.osehra.vista.soa.examples</groupId>
+  <artifactId>vista-soa-examples</artifactId>
+  <packaging>pom</packaging>
+  <name>VistA :: SOA :: Examples</name>
 
-  <dependencies>
-    <dependency>
-      <groupId>io.netty</groupId>
-      <artifactId>netty</artifactId>
-    </dependency>
+  <modules>
+    <module>proxy-spring</module>
+  </modules>
 
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-api</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-log4j12</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>log4j</groupId>
-      <artifactId>log4j</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-    </dependency>
-  </dependencies>
-
-  <build>
-  </build>
 </project>
 
