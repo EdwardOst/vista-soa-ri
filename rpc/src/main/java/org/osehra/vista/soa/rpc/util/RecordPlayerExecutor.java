@@ -56,7 +56,7 @@ public class RecordPlayerExecutor implements VistaExecutor {
     }
 
     @Override
-    public RpcResponse execute(RpcRequest request) {
+    public RpcResponse execute(final RpcRequest request) {
         LOG.debug(request.getName());
         int next = index.incrementAndGet();
         return next < responses.size() ? responses.get(next) : null;

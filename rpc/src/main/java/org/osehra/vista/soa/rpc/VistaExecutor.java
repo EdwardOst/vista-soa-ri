@@ -19,6 +19,6 @@ package org.osehra.vista.soa.rpc;
 
 public interface VistaExecutor {
 
-    RpcResponse execute(RpcRequest request);
+    RpcResponse execute(final RpcRequest request);
     
 }
