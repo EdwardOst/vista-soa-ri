@@ -48,34 +48,37 @@ public abstract class VistaServiceTestSupport {
     public void setUp() {
         InternalLoggerFactory.setDefaultFactory(new Slf4JLoggerFactory());
         createServer();
+        createClient();
     }
     @After
     public void tearDown() {
         if (server != null) {
-            LOG.debug("Shutting down VistA test server...");
+            LOG.debug("Shutting down VistA test server");
             server.completed();
         }
     }
 
     protected abstract VistaExecutor getExecutor();
 
-    protected VistaServer createServer(int port) {
-        return new VistaServer().setPort(port).setExecutor(getExecutor());
-    }
-
     protected void runServer(final VistaServer server) {
-        Thread t = new Thread(new Runnable() {
-            public void run() {
-                server.run();
-            }
-        });
-        t.setDaemon(true);
-        t.start();
+    	if (server != null) {
+            Thread t = new Thread(new Runnable() {
+                public void run() {
+                    server.run();
+                }
+            });
+            t.setDaemon(true);
+            t.start();
+    	}
     }
 
     protected void createServer() {
-        server = createServer(port);
-        LOG.debug("Starting VistA test server...");
+        createServer(port);
+    }
+
+    protected void createServer(int port) {
+    	server = new VistaServer().setPort(port).setExecutor(getExecutor());
+        LOG.debug("Starting VistA test server on port {}", port);
         runServer(server);
     }
 
@@ -84,6 +87,7 @@ public abstract class VistaServiceTestSupport {
     }
 
     protected Channel createClientChannel(String host, int port) {
+        LOG.debug("Creating VistA test client for {}:{}", host, port);
         // Configure the client.
         ClientBootstrap bootstrap = new ClientBootstrap(new NioClientSocketChannelFactory(
             Executors.newCachedThreadPool(),

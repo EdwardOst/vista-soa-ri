@@ -19,7 +19,6 @@ package org.osehra.vista.camel.rpc.service;
 import java.io.ByteArrayInputStream;
 
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.osehra.vista.soa.rpc.RpcResponse;
 import org.osehra.vista.soa.rpc.VistaExecutor;
@@ -40,11 +39,6 @@ public class VistaConnectionTest extends VistaServiceTestSupport {
                 + "|00000000| 00 00 61 63 63 65 70 74 04                      |..accept.       |\n"
                 + "+--------+-------------------------------------------------+----------------+\n";
         return new RecordPlayerExecutor(new ByteArrayInputStream(content.getBytes()));
-    }
-
-    @Before
-    public void setupClient() {
-        createClient();
     }
 
     @Test
