@@ -17,40 +17,71 @@
 package org.osehra.vista.soa.rpc;
 
 import java.util.ArrayList;
-import java.util.List;
 
 
 public final class RpcResponse {
-    private List<List<String>> content = new ArrayList<List<String>>();
+	private static final String DELIM = "^";
+	private static final String CRLF = "\r\n";
+	
+	public static final class Line extends ArrayList<String> {
+		private static final long serialVersionUID = 1L;
 
+		public String toString() {
+			StringBuffer sb = new StringBuffer(lineSize(this));
+			for (String f : this) {
+				sb.append(sb.length() > 0 ? DELIM : "");
+				sb.append(f);
+			}
+			return sb.toString();
+		}
+	}
+	public static final class Entry extends ArrayList<Line> {
+		private static final long serialVersionUID = 1L;
+
+		public String toString() {
+			StringBuffer sb = new StringBuffer(entrySize(this));
+			for (Line l : this) {
+				sb.append(sb.length() > 0 ? CRLF : "");
+				sb.append(l);
+			}
+			return sb.toString();
+		}
+	}
+
+	private Entry content = new Entry();
+	
     public RpcResponse() {
     }
 
-    public List<List<String>> getContent() {
+    public Entry getContent() {
         return content;
     }
-    public List<String> getRow(int row) {
-        return row >= 0 && row < content.size() ? content.get(row) : null;
-    }
-    public String getField(int row, int column) {
-        List<String> r = getRow(row);
-        return column >= 0 && column < r.size() ? r.get(column) : null;
+
+    public String getLine(int index) {
+    	return content.get(index).toString();
     }
 
-    public RpcResponse row() {
-        return row(null);
-    }
-    public RpcResponse row(final List<String> row) {
-        content.add(row == null ? new ArrayList<String>() : new ArrayList<String>(row));
-        return this;
-    }
-    public RpcResponse field(String value) {
-        if (content.size() == 0) {
-            throw new IllegalArgumentException("Must create rows first");
-        }
-        getRow(content.size() - 1).add(value);
-        return this;
+    public String getField(int line, int index) {
+    	return content.get(line).get(index);
     }
 
+    public void appendLine(Line line) {
+    	content.add(line);
+    }
+    private static int entrySize(Entry entry) {
+    	int len = 0;
+    	for (Line l: entry) {
+    		len += lineSize(l) + 2;
+    	}
+    	return len;
+    }
+
+    private static int lineSize(Line line) {
+    	int len = line.size();
+    	for (String f: line) {
+    		len += f.length();
+    	}
+    	return len;
+    }
 }
 

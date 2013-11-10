@@ -19,6 +19,7 @@ package org.osehra.vista.soa.rpc;
 
 public final class RpcConstants {
 
+    public static final int DEF_FRAME_LEN = 1024;
     public static final int MAX_FRAME_LEN = 64 * 1024;
     public static final int MAX_NS_LEN = 4;
     public static final int CODE_LEN = 5;

@@ -80,7 +80,7 @@ public class NettyBufferParseTest {
     }
 
     @Test
-    public void testParseMultipleEntries() throws Exception {
+    public void testParseRequests() throws Exception {
         String content = ""
             + "         +-------------------------------------------------+\n"
             + "         |  0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f |\n"
@@ -116,25 +116,32 @@ public class NettyBufferParseTest {
     }
 
     @Test
-    public void testParseResponse() throws Exception {
+    public void testParseResponses() throws Exception {
         String content = ""
             + "         +-------------------------------------------------+\n"
             + "         |  0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f |\n"
             + "+--------+-------------------------------------------------+----------------+\n"
             + "|00000000| 00 00 61 63 63 65 70 74 04                      |..accept.       |\n"
+            + "+--------+-------------------------------------------------+----------------+\n"
+            + "+--------+-------------------------------------------------+----------------+\n"
+            + "|00000000| 00 00 31 04                                     |..1.            |\n"
             + "+--------+-------------------------------------------------+----------------+\n";
 
         NettyLogLineParser logParser = new NettyLogLineParser();
         new TextParser(logParser).parse(new ByteArrayInputStream(content.getBytes()));
 
-        Assert.assertEquals(1, logParser.getEntries().size());
+        Assert.assertEquals(2, logParser.getEntries().size());
         byte[] buffer = logParser.getEntries().get(0);
         Assert.assertEquals(9, buffer.length);
 
+        RpcResponse result;
         DecoderEmbedder<RpcResponse> e = new DecoderEmbedder<RpcResponse>(new RpcResponseDecoder());
         e.offer(ChannelBuffers.copiedBuffer(buffer));
-        RpcResponse result = e.poll();
+        result = e.poll();
         Assert.assertNotNull(result);
+        Assert.assertEquals(1, result.getContent().size());
+        Assert.assertEquals(1, result.getContent().get(0).size());
+        Assert.assertEquals("accept", result.getField(0, 0));
     }
 
 }

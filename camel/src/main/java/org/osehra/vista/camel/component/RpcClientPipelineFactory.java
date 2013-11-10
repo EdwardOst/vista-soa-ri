@@ -19,20 +19,15 @@ package org.osehra.vista.camel.component;
 import org.apache.camel.component.netty.ClientPipelineFactory;
 import org.apache.camel.component.netty.NettyProducer;
 import org.apache.camel.component.netty.handlers.ClientChannelHandler;
-import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.Channels;
-import org.jboss.netty.handler.codec.frame.DelimiterBasedFrameDecoder;
 import org.jboss.netty.handler.logging.LoggingHandler;
 import org.jboss.netty.logging.InternalLogLevel;
-import org.osehra.vista.soa.rpc.RpcConstants;
-import org.osehra.vista.soa.rpc.codec.RpcCodecUtils;
 import org.osehra.vista.soa.rpc.codec.RpcRequestEncoder;
 import org.osehra.vista.soa.rpc.codec.RpcResponseDecoder;
 
 
 public class RpcClientPipelineFactory extends ClientPipelineFactory {
-    private static final char[] DELIM = { RpcConstants.FRAME_STOP };
     private final NettyProducer producer;
 
     public RpcClientPipelineFactory(NettyProducer producer) {
@@ -43,10 +38,8 @@ public class RpcClientPipelineFactory extends ClientPipelineFactory {
     public ChannelPipeline getPipeline() throws Exception {
 
         ChannelPipeline pipeline = Channels.pipeline();
-        pipeline.addLast("logger", new LoggingHandler(InternalLogLevel.INFO));
-        pipeline.addLast("decoder-frame", new DelimiterBasedFrameDecoder(RpcConstants.MAX_FRAME_LEN,
-            ChannelBuffers.unmodifiableBuffer(ChannelBuffers.copiedBuffer(DELIM, RpcCodecUtils.DEF_CHARSET))));
-        pipeline.addLast("decoder-response", new RpcResponseDecoder());
+        pipeline.addLast("logger", new LoggingHandler(InternalLogLevel.DEBUG));
+        pipeline.addLast("decoder", new RpcResponseDecoder());
         pipeline.addLast("encoder", new RpcRequestEncoder());
         pipeline.addLast("handler", new ClientChannelHandler(producer));
 

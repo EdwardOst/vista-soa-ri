@@ -16,25 +16,27 @@
 
 package org.osehra.vista.camel.component;
 
+import static org.osehra.vista.soa.rpc.util.commands.VistaCommands.vista;
+
 import java.io.ByteArrayInputStream;
 
-import org.apache.camel.Endpoint;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.component.netty.NettyEndpoint;
+import org.apache.camel.impl.JndiRegistry;
 import org.apache.camel.test.junit4.CamelTestSupport;
 import org.junit.Test;
 import org.osehra.vista.soa.rpc.RpcResponse;
 import org.osehra.vista.soa.rpc.util.RecordPlayerExecutor;
 
-import static org.osehra.vista.soa.rpc.util.commands.VistaCommands.vista;
 
-
-public class VistaRpcEndpointTest extends CamelTestSupport {
+public class VistaSimpleProxyTest extends CamelTestSupport {
     private static RecordPlayerExecutor executor;
     static {
         String content = ""
+            + "+--------+-------------------------------------------------+----------------+\n"
+            + "|00000000| 00 00 31 04                                     |..1.            |\n"
+            + "+--------+-------------------------------------------------+----------------+\n"
             + "+--------+-------------------------------------------------+----------------+\n"
             + "|00000000| 00 00 31 04                                     |..1.            |\n"
             + "+--------+-------------------------------------------------+----------------+\n";
@@ -42,13 +44,20 @@ public class VistaRpcEndpointTest extends CamelTestSupport {
     }
 
     @Test
-    public void testVistaEndpointType() throws Exception {
-        Endpoint vista = this.getMandatoryEndpoint("vista://localhost:9200");
-        assertTrue(vista instanceof NettyEndpoint);
-
-        RpcResponse reply = template.requestBody("vista://localhost:9200", vista().connect("192.168.1.100", "vista.example.org"), RpcResponse.class);
+    public void testSimpleProxy() throws Exception {
+        RpcResponse reply;
+        reply = template.requestBody("vista://localhost:9201", vista().connect("192.168.1.100", "vista.example.org"), RpcResponse.class);
+        reply = template.requestBody("vista://localhost:9201", vista().signonSetup(), RpcResponse.class);
         assertNotNull(reply);
         assertEquals("1", reply.getField(0, 0));
+    }
+
+    @Override
+    protected JndiRegistry createRegistry() throws Exception {
+        JndiRegistry registry = super.createRegistry();
+        registry.bind("rpc-in", new RpcServerPipelineFactory(null));
+        registry.bind("rpc-out", new RpcClientPipelineFactory(null));
+        return registry;
     }
 
     @Override
@@ -59,6 +68,9 @@ public class VistaRpcEndpointTest extends CamelTestSupport {
                     public void process(Exchange exchange) throws Exception {
                         exchange.getOut().setBody(executor.getResponses().get(0));
                     }}).to("mock:result");
+
+                 from("vista://localhost:9201")
+                     .to("vista://localhost:9200");
             }
         };
     }

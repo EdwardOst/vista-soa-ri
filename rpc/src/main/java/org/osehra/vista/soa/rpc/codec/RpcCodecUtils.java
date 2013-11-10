@@ -61,7 +61,7 @@ public final class RpcCodecUtils {
             
             List<Parameter> params = request.getParmeters();
             if (params.size() > 0 || encodeEmptyParamList) {
-                cb.writeByte((byte) RpcConstants.PARAMS_START);
+                cb.writeByte((byte)RpcConstants.PARAMS_START);
                 if (params.size() > 0) {
                     for (Parameter p : params) {
                         encodeParameter(p, cb);
@@ -70,7 +70,7 @@ public final class RpcCodecUtils {
                     encodeEmptyParameter(cb);
                 }
             }
-            cb.writeByte((byte) RpcConstants.FRAME_STOP);
+            cb.writeByte((byte)RpcConstants.FRAME_STOP);
         } catch (UnsupportedEncodingException e) {
             LOG.warn("Failed to encode request", e);
         }
@@ -242,7 +242,7 @@ public final class RpcCodecUtils {
         }
         return result;
     }
-    
+
 
     private RpcCodecUtils() {
         // Utility class

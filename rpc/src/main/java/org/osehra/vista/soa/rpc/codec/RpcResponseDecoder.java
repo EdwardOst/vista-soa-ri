@@ -16,115 +16,92 @@
 
 package org.osehra.vista.soa.rpc.codec;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.handler.codec.frame.FrameDecoder;
+import org.jboss.netty.handler.codec.frame.CorruptedFrameException;
+import org.jboss.netty.handler.codec.frame.TooLongFrameException;
+import org.jboss.netty.handler.codec.replay.ReplayingDecoder;
 import org.osehra.vista.soa.rpc.RpcConstants;
 import org.osehra.vista.soa.rpc.RpcResponse;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 
-public class RpcResponseDecoder extends FrameDecoder {
+public class RpcResponseDecoder extends ReplayingDecoder<RpcResponseDecoder.State> {
 
-    private final static Logger LOG = LoggerFactory.getLogger(RpcResponseDecoder.class);
+    public RpcResponseDecoder() {
+        super(State.READ_PREFIX);
+    }
 
     @Override
-    protected Object decode(final ChannelHandlerContext ctx,
-            final Channel channel, final ChannelBuffer buffer) throws Exception {
+    protected Object decode(ChannelHandlerContext ctx, Channel channel, ChannelBuffer buffer, State state) throws Exception {
+    	RpcResponse message = new RpcResponse();
 
-        int l = framePrefixLen(buffer);
-        LOG.trace("Skipping frame buffer of {} bytes", l);
-        buffer.skipBytes(l);
-
-        RpcResponse response = new RpcResponse();
-        if (buffer.readableBytes() == 0) {
-            return response;    // empty frame
+        switch (state) {
+        case READ_PREFIX: {
+        	if (buffer.readByte() != RpcConstants.FRAME_START || buffer.readByte() != RpcConstants.FRAME_START) {
+        		throw new CorruptedFrameException("Invalid prefix for VistA rpc frame");
+        	}
+        	checkpoint(State.READ_CONTENT);
+        }
+        case READ_CONTENT: {
+        	boolean eot = false;
+        	while (!eot) {
+        		RpcResponse.Line line = new RpcResponse.Line();
+        		eot = readLine(buffer, line, RpcConstants.MAX_FRAME_LEN);
+        		message.appendLine(line);
+        		checkpoint();
+        	}
+        	break;
+        }
+        default:
+            // Should not get here, all cases are handled
+            throw new CorruptedFrameException();
         }
 
-        boolean done = false;
-        while (!done) {
-            final int eol = findEndOfLine(buffer);
-            final int len = eol >= 0 ? eol - buffer.readerIndex() : buffer.readableBytes();
-            final int dlen = eol < 0 ? 0 : buffer.getByte(eol) == '\r' ? 2 : 1;
-
-            final ChannelBuffer frame;
-            try {
-                frame = extractFrame(buffer, buffer.readerIndex(), len);
-            } finally {
-                buffer.skipBytes(len + dlen);
-            }
-
-            response.row(parseRow(frame));
-            done = eol < 0;
-        }
-        
-        LOG.info("GOT: ", response.getContent().toString());
-        return response;
+    	checkpoint(State.READ_PREFIX);
+        return message;
     }
 
-    private int framePrefixLen(ChannelBuffer buffer) {
-        final int r = buffer.readerIndex();
-        final int w = buffer.writerIndex();
-        for (int i = r; i < w; i ++) {
-            final byte b = buffer.getByte(i);
-            if (b != '\0') {
-                return i - r;
+    private boolean readLine(ChannelBuffer buffer, RpcResponse.Line line, int maxLength) throws TooLongFrameException {
+    	boolean quote = false;
+    	StringBuilder sb = new StringBuilder(RpcConstants.DEF_FRAME_LEN);
+
+    	int ll = 0;
+        while (true) {
+            byte nextByte = buffer.readByte();
+            if (nextByte == RpcConstants.FRAME_STOP) {
+            	flushField(sb, line);
+                return true;
+            } else if (nextByte == '\r') { // CRLF
+                nextByte = buffer.readByte();
+                if (nextByte == '\n') {
+                	flushField(sb, line);
+                    return false;
+                }
+            } else if (nextByte == RpcConstants.FIELD_DELIM && !quote) {
+            	flushField(sb, line);
+            } else {
+                if (ll >= maxLength) {
+                    throw new TooLongFrameException(
+                        "VistA rpc frame larger than " + maxLength + " bytes.");
+                }
+                if (nextByte == '\'') {
+                	quote = !quote;
+                }
+                ll++;
+                sb.append((char)nextByte);
             }
         }
-        return w - r;
+    }
+    
+    private static void flushField(StringBuilder sb, RpcResponse.Line line) {
+    	line.add(sb.toString());
+    	sb.setLength(0);
     }
 
-    private List<String> parseRow(final ChannelBuffer buffer) {
-        List<String> fields = new ArrayList<String>();
-        boolean done = false;
-        while (!done) {
-            final int eof = findEndOfField(buffer);
-            final int len = eof >= 0 ? eof - buffer.readerIndex() : buffer.readableBytes();
-            final int dlen = eof < 0 ? 0 : 1;
-
-            final ChannelBuffer frame;
-            try {
-                frame = extractFrame(buffer, buffer.readerIndex(), len);
-            } finally {
-                buffer.skipBytes(len + dlen);
-            }
-
-            fields.add(frame.toString(RpcCodecUtils.DEF_CHARSET));
-            done = eof < 0;
-        }
-        return fields;
-    }
-
-    private static int findEndOfLine(final ChannelBuffer buffer) {
-        final int n = buffer.writerIndex();
-        for (int i = buffer.readerIndex(); i < n; i ++) {
-            final byte b = buffer.getByte(i);
-            if (b == '\n') {
-                return i;
-            } else if (b == '\r' && i < n - 1 && buffer.getByte(i + 1) == '\n') {
-                return i;  // \r\n
-            }
-        }
-        return -1;  // Not found.
-    }
-
-    private static int findEndOfField(final ChannelBuffer buffer) {
-        boolean skip = false;
-        final int n = buffer.writerIndex();
-        for (int i = buffer.readerIndex(); i < n; i ++) {
-            final byte b = buffer.getByte(i);
-            if (b == RpcConstants.FIELD_DELIM && !skip) {
-                return i;
-            } else if (b == '\'') {
-                skip = !skip;
-            } 
-        }
-        return -1;
+    enum State {
+        READ_PREFIX,
+        READ_CONTENT
     }
 
 }

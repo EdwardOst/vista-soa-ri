@@ -16,7 +16,6 @@
 
 package org.osehra.vista.soa.rpc.codec;
 
-import java.util.List;
 
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
@@ -37,18 +36,8 @@ public class RpcResponseEncoder extends OneToOneEncoder {
             ChannelBuffer cb = ChannelBuffers.dynamicBuffer();
             cb.writeByte((byte)RpcConstants.FRAME_START);
             cb.writeByte((byte)RpcConstants.FRAME_START);
-            String rs = "";
-            for (List<String> r : response.getContent()) {
-                cb.writeBytes(rs.getBytes(RpcCodecUtils.DEF_CHARSET));
-                rs = "\r\n";
-
-                String fs = "";
-                for (String f : r) {
-                    cb.writeBytes(fs.getBytes(RpcCodecUtils.DEF_CHARSET));
-                    fs = "^";
-                    cb.writeBytes(f.getBytes(RpcCodecUtils.DEF_CHARSET));
-                }
-            }
+            String content = response.getContent().toString();
+            cb.writeBytes(content.getBytes(RpcCodecUtils.DEF_CHARSET));
             cb.writeByte((byte)RpcConstants.FRAME_STOP);
             return cb;
         }

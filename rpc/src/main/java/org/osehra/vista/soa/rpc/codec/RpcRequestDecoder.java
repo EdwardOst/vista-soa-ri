@@ -109,14 +109,14 @@ public class RpcRequestDecoder extends ReplayingDecoder<RpcRequestDecoder.State>
                 break;
             }
             if (b != RpcConstants.PARAMS_START) {
-                throw new CorruptedFrameException("Expected either parameters of end of frame.");
+                throw new CorruptedFrameException("Expected either parameters or end of frame.");
             }
 
-            boolean eoframe = false;
-            while (!eoframe) {
+            boolean eot = false;
+            while (!eot) {
                 Parameter param = RpcCodecUtils.decodeParameter(buffer);
-                eoframe = param == null;
-                if (!eoframe) {
+                eot = param == null;
+                if (!eot) {
                     params.add(param);
                 }
             }
