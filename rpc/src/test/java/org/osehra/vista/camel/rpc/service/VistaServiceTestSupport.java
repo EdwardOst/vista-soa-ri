@@ -61,7 +61,7 @@ public abstract class VistaServiceTestSupport {
     protected abstract VistaExecutor getExecutor();
 
     protected void runServer(final VistaServer server) {
-    	if (server != null) {
+        if (server != null) {
             Thread t = new Thread(new Runnable() {
                 public void run() {
                     server.run();
@@ -69,7 +69,7 @@ public abstract class VistaServiceTestSupport {
             });
             t.setDaemon(true);
             t.start();
-    	}
+        }
     }
 
     protected void createServer() {
@@ -77,7 +77,7 @@ public abstract class VistaServiceTestSupport {
     }
 
     protected void createServer(int port) {
-    	server = new VistaServer().setPort(port).setExecutor(getExecutor());
+        server = new VistaServer().setPort(port).setExecutor(getExecutor());
         LOG.debug("Starting VistA test server on port {}", port);
         runServer(server);
     }

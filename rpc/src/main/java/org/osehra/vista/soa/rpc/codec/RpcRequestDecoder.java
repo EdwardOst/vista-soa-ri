@@ -35,8 +35,8 @@ import org.slf4j.LoggerFactory;
 
 public class RpcRequestDecoder extends ReplayingDecoder<RpcRequestDecoder.State> {
 
-    @SuppressWarnings("unused")	// TODO: add logging
-	private final static Logger LOG = LoggerFactory.getLogger(RpcRequestDecoder.class);
+    @SuppressWarnings("unused")
+    private final static Logger LOG = LoggerFactory.getLogger(RpcRequestDecoder.class);
 
     private String namespace;
     private String code;

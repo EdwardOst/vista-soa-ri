@@ -44,8 +44,8 @@ public class VistaRpcComponent extends NettyComponent {
     }
 
     // TODO: There is a bug in camel-netty that causes the configuration to be overwritten in
-    // NettyConfiguration.parseURI, by providing new default values instead of the preconfigured values
-    // This is a temporary workaround until that issus is fixed.
+    // NettyConfiguration.parseURI, by providing new default values instead of the pre-configured 
+    // values. This is a temporary workaround until that issue is fixed.
     @Override
     @SuppressWarnings("unchecked")
     public <T> T resolveAndRemoveReferenceParameter(Map<String, Object> parameters, String key, Class<T> type, T defaultValue) {

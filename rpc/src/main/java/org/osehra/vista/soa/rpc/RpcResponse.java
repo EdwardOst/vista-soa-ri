@@ -20,36 +20,36 @@ import java.util.ArrayList;
 
 
 public final class RpcResponse {
-	private static final String DELIM = "^";
-	private static final String CRLF = "\r\n";
-	
-	public static final class Line extends ArrayList<String> {
-		private static final long serialVersionUID = 1L;
+    private static final String DELIM = "^";
+    private static final String CRLF = "\r\n";
+    
+    public static final class Line extends ArrayList<String> {
+        private static final long serialVersionUID = 1L;
 
-		public String toString() {
-			StringBuffer sb = new StringBuffer(lineSize(this));
-			for (String f : this) {
-				sb.append(sb.length() > 0 ? DELIM : "");
-				sb.append(f);
-			}
-			return sb.toString();
-		}
-	}
-	public static final class Entry extends ArrayList<Line> {
-		private static final long serialVersionUID = 1L;
+        public String toString() {
+            StringBuffer sb = new StringBuffer(lineSize(this));
+            for (String f : this) {
+                sb.append(sb.length() > 0 ? DELIM : "");
+                sb.append(f);
+            }
+            return sb.toString();
+        }
+    }
+    public static final class Entry extends ArrayList<Line> {
+        private static final long serialVersionUID = 1L;
 
-		public String toString() {
-			StringBuffer sb = new StringBuffer(entrySize(this));
-			for (Line l : this) {
-				sb.append(sb.length() > 0 ? CRLF : "");
-				sb.append(l);
-			}
-			return sb.toString();
-		}
-	}
+        public String toString() {
+            StringBuffer sb = new StringBuffer(entrySize(this));
+            for (Line l : this) {
+                sb.append(sb.length() > 0 ? CRLF : "");
+                sb.append(l);
+            }
+            return sb.toString();
+        }
+    }
 
-	private Entry content = new Entry();
-	
+    private Entry content = new Entry();
+    
     public RpcResponse() {
     }
 
@@ -58,30 +58,30 @@ public final class RpcResponse {
     }
 
     public String getLine(int index) {
-    	return content.get(index).toString();
+        return content.get(index).toString();
     }
 
     public String getField(int line, int index) {
-    	return content.get(line).get(index);
+        return content.get(line).get(index);
     }
 
     public void appendLine(Line line) {
-    	content.add(line);
+        content.add(line);
     }
     private static int entrySize(Entry entry) {
-    	int len = 0;
-    	for (Line l: entry) {
-    		len += lineSize(l) + 2;
-    	}
-    	return len;
+        int len = 0;
+        for (Line l: entry) {
+            len += lineSize(l) + 2;
+        }
+        return len;
     }
 
     private static int lineSize(Line line) {
-    	int len = line.size();
-    	for (String f: line) {
-    		len += f.length();
-    	}
-    	return len;
+        int len = line.size();
+        for (String f: line) {
+            len += f.length();
+        }
+        return len;
     }
 }
 

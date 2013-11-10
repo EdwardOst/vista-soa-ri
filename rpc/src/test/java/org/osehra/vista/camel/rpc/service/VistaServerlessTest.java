@@ -26,7 +26,7 @@ public final class VistaServerlessTest extends VistaServiceTestSupport {
 
     @Override
     protected void createServer(int port) {
-    	server = null;
+        server = null;
     }
 
     @Test
@@ -35,11 +35,11 @@ public final class VistaServerlessTest extends VistaServiceTestSupport {
         Assert.assertNotNull(client);
     }
 
-	@Override
-	protected VistaExecutor getExecutor() {
-		// no executor needed for serverless tests
-		return null;
-	}
+    @Override
+    protected VistaExecutor getExecutor() {
+        // no executor needed for serverless tests
+        return null;
+    }
 
 }
 

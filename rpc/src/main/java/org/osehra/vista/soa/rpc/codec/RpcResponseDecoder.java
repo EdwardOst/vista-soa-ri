@@ -34,59 +34,59 @@ public class RpcResponseDecoder extends ReplayingDecoder<RpcResponseDecoder.Stat
 
     @Override
     protected Object decode(ChannelHandlerContext ctx, Channel channel, ChannelBuffer buffer, State state) throws Exception {
-    	RpcResponse message = new RpcResponse();
+        RpcResponse message = new RpcResponse();
 
         switch (state) {
         case READ_PREFIX: {
-        	if (buffer.readByte() != RpcConstants.FRAME_START || buffer.readByte() != RpcConstants.FRAME_START) {
-        		throw new CorruptedFrameException("Invalid prefix for VistA rpc frame");
-        	}
-        	checkpoint(State.READ_CONTENT);
+            if (buffer.readByte() != RpcConstants.FRAME_START || buffer.readByte() != RpcConstants.FRAME_START) {
+                throw new CorruptedFrameException("Invalid prefix for VistA rpc frame");
+            }
+            checkpoint(State.READ_CONTENT);
         }
         case READ_CONTENT: {
-        	boolean eot = false;
-        	while (!eot) {
-        		RpcResponse.Line line = new RpcResponse.Line();
-        		eot = readLine(buffer, line, RpcConstants.MAX_FRAME_LEN);
-        		message.appendLine(line);
-        		checkpoint();
-        	}
-        	break;
+            boolean eot = false;
+            while (!eot) {
+                RpcResponse.Line line = new RpcResponse.Line();
+                eot = readLine(buffer, line, RpcConstants.MAX_FRAME_LEN);
+                message.appendLine(line);
+                checkpoint();
+            }
+            break;
         }
         default:
             // Should not get here, all cases are handled
             throw new CorruptedFrameException();
         }
 
-    	checkpoint(State.READ_PREFIX);
+        checkpoint(State.READ_PREFIX);
         return message;
     }
 
     private boolean readLine(ChannelBuffer buffer, RpcResponse.Line line, int maxLength) throws TooLongFrameException {
-    	boolean quote = false;
-    	StringBuilder sb = new StringBuilder(RpcConstants.DEF_FRAME_LEN);
+        boolean quote = false;
+        StringBuilder sb = new StringBuilder(RpcConstants.DEF_FRAME_LEN);
 
-    	int ll = 0;
+        int ll = 0;
         while (true) {
             byte nextByte = buffer.readByte();
             if (nextByte == RpcConstants.FRAME_STOP) {
-            	flushField(sb, line);
+                flushField(sb, line);
                 return true;
             } else if (nextByte == '\r') { // CRLF
                 nextByte = buffer.readByte();
                 if (nextByte == '\n') {
-                	flushField(sb, line);
+                    flushField(sb, line);
                     return false;
                 }
             } else if (nextByte == RpcConstants.FIELD_DELIM && !quote) {
-            	flushField(sb, line);
+                flushField(sb, line);
             } else {
                 if (ll >= maxLength) {
                     throw new TooLongFrameException(
                         "VistA rpc frame larger than " + maxLength + " bytes.");
                 }
                 if (nextByte == '\'') {
-                	quote = !quote;
+                    quote = !quote;
                 }
                 ll++;
                 sb.append((char)nextByte);
@@ -95,8 +95,8 @@ public class RpcResponseDecoder extends ReplayingDecoder<RpcResponseDecoder.Stat
     }
     
     private static void flushField(StringBuilder sb, RpcResponse.Line line) {
-    	line.add(sb.toString());
-    	sb.setLength(0);
+        line.add(sb.toString());
+        sb.setLength(0);
     }
 
     enum State {
