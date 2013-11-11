@@ -28,18 +28,25 @@ import org.osehra.vista.soa.rpc.RpcResponse;
 
 public class RpcResponseDecoder extends ReplayingDecoder<RpcResponseDecoder.State> {
 
+    RpcResponse message = new RpcResponse();
+
     public RpcResponseDecoder() {
         super(State.READ_PREFIX);
     }
 
     @Override
     protected Object decode(ChannelHandlerContext ctx, Channel channel, ChannelBuffer buffer, State state) throws Exception {
-        RpcResponse message = new RpcResponse();
-
         switch (state) {
         case READ_PREFIX: {
-            if (buffer.readByte() != RpcConstants.FRAME_START || buffer.readByte() != RpcConstants.FRAME_START) {
-                throw new CorruptedFrameException("Invalid prefix for VistA rpc frame");
+            message = new RpcResponse();
+            message.setCode(buffer.readByte());
+            int start = buffer.readerIndex();
+            int stop = start + actualReadableBytes();
+            for (int i = start; i < stop; i++) {
+                if (buffer.getByte(i) != RpcConstants.FRAME_START) {
+                    buffer.skipBytes(i - start);
+                    break;
+                }
             }
             checkpoint(State.READ_CONTENT);
         }
@@ -51,6 +58,7 @@ public class RpcResponseDecoder extends ReplayingDecoder<RpcResponseDecoder.Stat
                 message.appendLine(line);
                 checkpoint();
             }
+            checkpoint(State.READ_PREFIX);
             break;
         }
         default:
@@ -58,11 +66,10 @@ public class RpcResponseDecoder extends ReplayingDecoder<RpcResponseDecoder.Stat
             throw new CorruptedFrameException();
         }
 
-        checkpoint(State.READ_PREFIX);
         return message;
     }
 
-    private boolean readLine(ChannelBuffer buffer, RpcResponse.Line line, int maxLength) throws TooLongFrameException {
+    private static boolean readLine(ChannelBuffer buffer, RpcResponse.Line line, int maxLength) throws TooLongFrameException {
         boolean quote = false;
         StringBuilder sb = new StringBuilder(RpcConstants.DEF_FRAME_LEN);
 

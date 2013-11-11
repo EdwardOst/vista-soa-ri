@@ -38,7 +38,7 @@ public class RpcClientPipelineFactory extends ClientPipelineFactory {
     public ChannelPipeline getPipeline() throws Exception {
 
         ChannelPipeline pipeline = Channels.pipeline();
-        pipeline.addLast("logger", new LoggingHandler(InternalLogLevel.DEBUG));
+        pipeline.addLast("logger", new LoggingHandler(InternalLogLevel.INFO));
         pipeline.addLast("decoder", new RpcResponseDecoder());
         pipeline.addLast("encoder", new RpcRequestEncoder());
         pipeline.addLast("handler", new ClientChannelHandler(producer));

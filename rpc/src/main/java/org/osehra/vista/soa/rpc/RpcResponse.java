@@ -22,6 +22,9 @@ import java.util.ArrayList;
 public final class RpcResponse {
     private static final String DELIM = "^";
     private static final String CRLF = "\r\n";
+
+    private int code = 0;
+    private Entry content = new Entry();
     
     public static final class Line extends ArrayList<String> {
         private static final long serialVersionUID = 1L;
@@ -47,10 +50,16 @@ public final class RpcResponse {
             return sb.toString();
         }
     }
-
-    private Entry content = new Entry();
     
     public RpcResponse() {
+    }
+
+    public int getCode() {
+        return code;
+    }
+
+    public void setCode(int code) {
+        this.code = code;
     }
 
     public Entry getContent() {
