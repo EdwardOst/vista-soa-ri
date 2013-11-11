@@ -120,17 +120,28 @@ public class RpcRequestDecoder extends ReplayingDecoder<RpcRequestDecoder.State>
                     params.add(param);
                 }
             }
-            break;
+            RpcRequest request = new RpcRequest().namespace(namespace).code(code).name(name).version(version);
+            request.getParmeters().addAll(params);
+
+            reset();
+            return request;
         }
         default:
             // Should not get here, all cases are handled
             throw new CorruptedFrameException();
         }
 
-        ctx.getPipeline().remove(this);
-        RpcRequest request = new RpcRequest().namespace(namespace).code(code).name(name).version(version);
-        request.getParmeters().addAll(params);
-        return request;
+        // ctx.getPipeline().remove(this);
+        return null;
+    }
+
+    private void reset() {
+        namespace = null;
+        code = null;
+        name = null;
+        version = null;
+        params.clear();
+        checkpoint(State.READ_NS);
     }
 
     enum State {

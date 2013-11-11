@@ -35,6 +35,7 @@
 
   <modules>
     <module>proxy-spring</module>
+    <module>identity-proxy</module>
   </modules>
 
 </project>
