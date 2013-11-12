@@ -23,6 +23,8 @@ import org.apache.camel.Endpoint;
 import org.apache.camel.component.netty.ClientPipelineFactory;
 import org.apache.camel.component.netty.NettyComponent;
 import org.apache.camel.component.netty.ServerPipelineFactory;
+import org.jboss.netty.logging.InternalLoggerFactory;
+import org.jboss.netty.logging.Slf4JLoggerFactory;
 
 
 public class VistaRpcComponent extends NettyComponent {
@@ -31,6 +33,7 @@ public class VistaRpcComponent extends NettyComponent {
     private ServerPipelineFactory serverPipelineFactory;
 
     public VistaRpcComponent() {
+        InternalLoggerFactory.setDefaultFactory(new Slf4JLoggerFactory());
         clientPipelineFactory = new RpcClientPipelineFactory(null);
         serverPipelineFactory = new RpcServerPipelineFactory(null);
     }

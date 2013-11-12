@@ -28,7 +28,6 @@ import org.jboss.netty.handler.codec.replay.ReplayingDecoder;
 import org.osehra.vista.soa.rpc.Parameter;
 import org.osehra.vista.soa.rpc.RpcConstants;
 import org.osehra.vista.soa.rpc.RpcRequest;
-import org.osehra.vista.soa.rpc.RpcResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -132,7 +131,6 @@ public class RpcRequestDecoder extends ReplayingDecoder<RpcRequestDecoder.State>
             throw new CorruptedFrameException();
         }
 
-        // ctx.getPipeline().remove(this);
         return null;
     }
 
@@ -149,7 +147,7 @@ public class RpcRequestDecoder extends ReplayingDecoder<RpcRequestDecoder.State>
         StringBuilder sb = new StringBuilder(RpcConstants.DEF_FRAME_LEN);
         for (int i = 0; i < maxLength; i++) {
             byte nextByte = buffer.readByte();
-            if (nextByte == '\r') {
+            if (nextByte == '\n') {
                 return sb.toString();
             }
             sb.append((char)nextByte);
