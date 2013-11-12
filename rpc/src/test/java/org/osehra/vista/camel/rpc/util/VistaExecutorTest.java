@@ -23,6 +23,7 @@ import java.io.FileInputStream;
 import org.junit.Assert;
 import org.junit.Test;
 import org.osehra.vista.soa.rpc.RpcRequest;
+import org.osehra.vista.soa.rpc.RpcResponse;
 import org.osehra.vista.soa.rpc.util.RecordPlayerExecutor;
 
 import static org.osehra.vista.soa.rpc.util.commands.VistaCommands.vista;
@@ -77,13 +78,21 @@ public class VistaExecutorTest {
     }
 
     protected void playDummyRequest(int count, RecordPlayerExecutor runtime) {
-        RpcRequest dummy = vista().connect("192.168.1.100", "vista.example.org");
+        RpcRequest[] requests = {
+            vista().connect("192.168.1.100", "vista.example.org"),
+            vista().signonSetup(),
+            vista().login("access", "verify")
+        };
 
-        Assert.assertEquals(count, runtime.getResponses().size());
-        for (int i = 0; i < runtime.getResponses().size(); i++) {
-            Assert.assertNotNull(runtime.execute(dummy));   // consume responses
+        RpcResponse response = null;
+        Assert.assertEquals(requests.length, runtime.getResponses().size());
+        for (RpcRequest request : requests) {
+            response = runtime.execute(request);
+            Assert.assertNotNull(response);
         }
-        Assert.assertNull(runtime.execute(dummy));
+        Assert.assertEquals(14, response.getContent().size());
+        RpcResponse.Line line = response.getContent().get(7);
+        Assert.assertEquals("Good afternoon ", line.get(0).substring(0, 15));
     }
 
 }

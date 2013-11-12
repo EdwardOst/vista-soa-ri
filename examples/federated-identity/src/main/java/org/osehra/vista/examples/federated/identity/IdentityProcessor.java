@@ -31,17 +31,17 @@ public class IdentityProcessor implements Processor {
     private String verify;
 
     public IdentityProcessor(String access, String verify) {
-    	this.access = access;
-    	this.verify = verify;
+        this.access = access;
+        this.verify = verify;
     }
 
     @Override
-	public void process(Exchange exchange) throws Exception {
-		RpcRequest body = exchange.getIn().getBody(RpcRequest.class);
-		if (body != null && body.getName().equals("XUS AV CODE")) {
-			LOG.warn("Replacing VistA credentials...");
-			exchange.getOut().setBody(VistaCommands.vista().login(access, verify));
-		}
-	}
+    public void process(Exchange exchange) throws Exception {
+        RpcRequest body = exchange.getIn().getBody(RpcRequest.class);
+        if (body != null && body.getName().equals("XUS AV CODE")) {
+            LOG.warn("Replacing VistA credentials...");
+            exchange.getOut().setBody(VistaCommands.vista().login(access, verify));
+        }
+    }
     
 }

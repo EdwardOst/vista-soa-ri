@@ -24,34 +24,34 @@ import org.slf4j.LoggerFactory;
 
 
 public class VistaIdentityAggregator implements AggregationStrategy {
-	private final static Logger LOG = LoggerFactory.getLogger(VistaIdentityAggregator.class);
+    private final static Logger LOG = LoggerFactory.getLogger(VistaIdentityAggregator.class);
 
-	@Override
-	public Exchange aggregate(Exchange oldExchange, Exchange newExchange) {
-		if (oldExchange == null) {
-			return newExchange;
-		}
+    @Override
+    public Exchange aggregate(Exchange oldExchange, Exchange newExchange) {
+        if (oldExchange == null) {
+            return newExchange;
+        }
 
-		String request = newExchange.getProperty("VistaRequest", String.class);
-		RpcResponse response = newExchange.getIn().getBody(RpcResponse.class);
-		LOG.info("AGGREGATE results for '{}'", request);
+        String request = newExchange.getProperty("VistaRequest", String.class);
+        RpcResponse response = newExchange.getIn().getBody(RpcResponse.class);
+        LOG.info("AGGREGATE results for '{}'", request);
 
-		if (request.equals("XUS GET USER INFO")) {
-			if (response != null && response.getContent().size() >= 3) {
-				RpcResponse.Line l = response.getContent().get(1);
-				l.set(0, "HOUSE,GREGORY");
-				l = response.getContent().get(2);
-				l.set(0, "Gregory House");
-			}
-		} else if (request.equals("ORWU USERINFO")) {
-			if (response != null && response.getContent().size() >= 1) {
-				RpcResponse.Line l = response.getContent().get(0);
-				if (l.size() >= 2) {
-					l.set(1, "HOUSE,GREGORY");
-				}
-			}
-		}
-		return newExchange;
-	}
+        if (request.equals("XUS GET USER INFO")) {
+            if (response != null && response.getContent().size() >= 3) {
+                RpcResponse.Line l = response.getContent().get(1);
+                l.set(0, "HOUSE,GREGORY");
+                l = response.getContent().get(2);
+                l.set(0, "Gregory House");
+            }
+        } else if (request.equals("ORWU USERINFO")) {
+            if (response != null && response.getContent().size() >= 1) {
+                RpcResponse.Line l = response.getContent().get(0);
+                if (l.size() >= 2) {
+                    l.set(1, "HOUSE,GREGORY");
+                }
+            }
+        }
+        return newExchange;
+    }
     
 }

@@ -24,17 +24,17 @@ import org.slf4j.LoggerFactory;
 
 
 public class RequestTypeExpression implements Expression {
-	private final static Logger LOG = LoggerFactory.getLogger(RequestTypeExpression.class);
+    private final static Logger LOG = LoggerFactory.getLogger(RequestTypeExpression.class);
 
-	@Override
-	@SuppressWarnings("unchecked")
-	public <T> T evaluate(Exchange exchange, Class<T> type) {
-		RpcRequest request = exchange.getIn().getBody(RpcRequest.class);
-		if (request != null) {
-			LOG.info("PROCESSING VistA request: {}", request.getName());
-			return (T)request.getName();
-		}
-		return (T)"";
-	}
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T> T evaluate(Exchange exchange, Class<T> type) {
+        RpcRequest request = exchange.getIn().getBody(RpcRequest.class);
+        if (request != null) {
+            LOG.info("PROCESSING VistA request: {}", request.getName());
+            return (T)request.getName();
+        }
+        return (T)"";
+    }
     
 }

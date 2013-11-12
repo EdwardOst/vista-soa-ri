@@ -24,15 +24,15 @@ import org.slf4j.LoggerFactory;
 
 public class VistaQueryAggregator implements AggregationStrategy {
     @SuppressWarnings("unused")
-	private final static Logger LOG = LoggerFactory.getLogger(VistaQueryAggregator.class);
+    private final static Logger LOG = LoggerFactory.getLogger(VistaQueryAggregator.class);
 
-	@Override
-	public Exchange aggregate(Exchange oldExchange, Exchange newExchange) {
-		if (oldExchange == null) {
-			return newExchange;
-		}
+    @Override
+    public Exchange aggregate(Exchange oldExchange, Exchange newExchange) {
+        if (oldExchange == null) {
+            return newExchange;
+        }
 
-		return newExchange;
-	}
+        return newExchange;
+    }
     
 }
