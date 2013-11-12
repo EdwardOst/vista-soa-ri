@@ -18,13 +18,13 @@ package org.osehra.vista.examples.federated.identity;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.processor.aggregate.AggregationStrategy;
+import org.osehra.vista.soa.rpc.RpcResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-public class VistaQueryAggregator implements AggregationStrategy {
-    @SuppressWarnings("unused")
-	private final static Logger LOG = LoggerFactory.getLogger(VistaQueryAggregator.class);
+public class VistaIdentityAggregator implements AggregationStrategy {
+	private final static Logger LOG = LoggerFactory.getLogger(VistaIdentityAggregator.class);
 
 	@Override
 	public Exchange aggregate(Exchange oldExchange, Exchange newExchange) {
@@ -32,6 +32,25 @@ public class VistaQueryAggregator implements AggregationStrategy {
 			return newExchange;
 		}
 
+		String request = newExchange.getProperty("VistaRequest", String.class);
+		RpcResponse response = newExchange.getIn().getBody(RpcResponse.class);
+		LOG.info("AGGREGATE results for '{}'", request);
+
+		if (request.equals("XUS GET USER INFO")) {
+			if (response != null && response.getContent().size() >= 3) {
+				RpcResponse.Line l = response.getContent().get(1);
+				l.set(0, "HOUSE,GREGORY");
+				l = response.getContent().get(2);
+				l.set(0, "Gregory House");
+			}
+		} else if (request.equals("ORWU USERINFO")) {
+			if (response != null && response.getContent().size() >= 1) {
+				RpcResponse.Line l = response.getContent().get(0);
+				if (l.size() >= 2) {
+					l.set(1, "HOUSE,GREGORY");
+				}
+			}
+		}
 		return newExchange;
 	}
     

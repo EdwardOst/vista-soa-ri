@@ -17,22 +17,24 @@
 package org.osehra.vista.examples.federated.identity;
 
 import org.apache.camel.Exchange;
-import org.apache.camel.processor.aggregate.AggregationStrategy;
+import org.apache.camel.Expression;
+import org.osehra.vista.soa.rpc.RpcRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-public class VistaQueryAggregator implements AggregationStrategy {
-    @SuppressWarnings("unused")
-	private final static Logger LOG = LoggerFactory.getLogger(VistaQueryAggregator.class);
+public class RequestTypeExpression implements Expression {
+	private final static Logger LOG = LoggerFactory.getLogger(RequestTypeExpression.class);
 
 	@Override
-	public Exchange aggregate(Exchange oldExchange, Exchange newExchange) {
-		if (oldExchange == null) {
-			return newExchange;
+	@SuppressWarnings("unchecked")
+	public <T> T evaluate(Exchange exchange, Class<T> type) {
+		RpcRequest request = exchange.getIn().getBody(RpcRequest.class);
+		if (request != null) {
+			LOG.info("PROCESSING VistA request: {}", request.getName());
+			return (T)request.getName();
 		}
-
-		return newExchange;
+		return (T)"";
 	}
     
 }

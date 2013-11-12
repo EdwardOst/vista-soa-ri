@@ -24,18 +24,27 @@
          http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
          http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd">
 
-  <bean id="identity-validator" class="org.osehra.vista.examples.federated.identity.IdentityProcessor">
+  <bean id="identity-validator-one" class="org.osehra.vista.examples.federated.identity.IdentityProcessor">
     <constructor-arg index="0" value="fakedoc1" />
     <constructor-arg index="1" value="1Doc!@#$" />
   </bean>
-  <bean id="vistaAggregator" class="org.osehra.vista.examples.federated.identity.VistaQueryAggregator" />
+  <bean id="identity-validator-two" class="org.osehra.vista.examples.federated.identity.IdentityProcessor">
+    <constructor-arg index="0" value="fakedoc3" />
+    <constructor-arg index="1" value="3Doc!@#$" />
+  </bean>
+  <bean id="requestExpression" class="org.osehra.vista.examples.federated.identity.RequestTypeExpression" />
+  <bean id="queryAggregator" class="org.osehra.vista.examples.federated.identity.VistaQueryAggregator" />
+  <bean id="identityAggregator" class="org.osehra.vista.examples.federated.identity.VistaIdentityAggregator" />
 
   <camelContext id="camel" xmlns="http://camel.apache.org/schema/spring">
     <propertyPlaceholder id="vista-properties" location="classpath:vista.properties" />
 
     <route id="vista-example-federated-identity">
       <from uri="vista:{{vista.local}}" />
-      <multicast strategyRef="vistaAggregator">
+      <setProperty propertyName="VistaRequest">
+        <ref>requestExpression</ref>
+      </setProperty>
+      <multicast strategyRef="queryAggregator">
         <to uri="direct:instance-one" />
         <to uri="direct:instance-two" />
       </multicast>
@@ -43,12 +52,12 @@
 
     <route id="vista-instance-one">
       <from uri="direct:instance-one" />
-      <process ref="identity-validator" />
+      <process ref="identity-validator-one" />
       <to uri="vista:{{vista.remote.one}}" />
     </route>
     <route id="vista-instance-two">
       <from uri="direct:instance-two" />
-      <process ref="identity-validator" />
+      <process ref="identity-validator-two" />
       <to uri="vista:{{vista.remote.two}}" />
     </route>
   </camelContext>
