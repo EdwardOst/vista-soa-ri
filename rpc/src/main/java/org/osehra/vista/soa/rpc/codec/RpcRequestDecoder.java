@@ -28,6 +28,7 @@ import org.jboss.netty.handler.codec.replay.ReplayingDecoder;
 import org.osehra.vista.soa.rpc.Parameter;
 import org.osehra.vista.soa.rpc.RpcConstants;
 import org.osehra.vista.soa.rpc.RpcRequest;
+import org.osehra.vista.soa.rpc.RpcResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,7 +57,7 @@ public class RpcRequestDecoder extends ReplayingDecoder<RpcRequestDecoder.State>
         case READ_NS: {
             byte b = buffer.readByte();
             if (b != RpcConstants.NS_START) {
-                break;
+                return readNotification(buffer, RpcConstants.DEF_FRAME_LEN);
             }
             int ridx = buffer.readerIndex();
             int rbytes = actualReadableBytes();
@@ -142,6 +143,18 @@ public class RpcRequestDecoder extends ReplayingDecoder<RpcRequestDecoder.State>
         version = null;
         params.clear();
         checkpoint(State.READ_NS);
+    }
+
+    private static String readNotification(ChannelBuffer buffer, int maxLength) throws TooLongFrameException {
+        StringBuilder sb = new StringBuilder(RpcConstants.DEF_FRAME_LEN);
+        for (int i = 0; i < maxLength; i++) {
+            byte nextByte = buffer.readByte();
+            if (nextByte == '\r') {
+                return sb.toString();
+            }
+            sb.append((char)nextByte);
+        }
+        throw new TooLongFrameException("VistA rpc frame larger than " + maxLength + " bytes.");
     }
 
     enum State {
