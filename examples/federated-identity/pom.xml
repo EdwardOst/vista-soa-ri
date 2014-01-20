@@ -26,7 +26,7 @@
 
   <artifactId>example-federated-identity</artifactId>
   <packaging>bundle</packaging>
-  <name>VistA :: SOA :: Examples :: Identity Proxy</name>
+  <name>VistA :: SOA :: Examples :: Federated Identity</name>
   <description>An example showing how to implement federated identity for VistA</description>
 
   <properties>
