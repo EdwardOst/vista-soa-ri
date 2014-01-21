@@ -48,7 +48,7 @@ public class NettyBufferParseTest {
             + "|00000040| 6f 72 67 66 04                                  |orgf.           |\n"
             + "+--------+-------------------------------------------------+----------------+\n";
 
-        commonRequestParseTest(content);
+        parseRequest(content);
     }
 
     @Test
@@ -62,21 +62,7 @@ public class NettyBufferParseTest {
             + "|00000040| 6f 72 67 66 04                                  |orgf.           |\n"
             + "+--------+-------------------------------------------------+----------------+\n";
 
-        commonRequestParseTest(content);
-    }
-
-    public void commonRequestParseTest(String content) throws Exception {
-        NettyLogLineParser logParser = new NettyLogLineParser();
-        new TextParser(logParser).parse(new ByteArrayInputStream(content.getBytes()));
-
-        Assert.assertEquals(1, logParser.getEntries().size());
-        byte[] buffer = logParser.getEntries().get(0);
-        Assert.assertEquals(69, buffer.length);
-
-        DecoderEmbedder<RpcRequest> e = new DecoderEmbedder<RpcRequest>(new RpcRequestDecoder());
-        e.offer(ChannelBuffers.copiedBuffer(buffer));
-        RpcRequest result = e.poll();
-        Assert.assertNotNull(result);
+        Assert.assertNotNull(parseRequest(content));
     }
 
     @Test
@@ -104,7 +90,7 @@ public class NettyBufferParseTest {
             + "+--------+-------------------------------------------------+----------------+\n";
 
         NettyLogLineParser logParser = new NettyLogLineParser();
-        new TextParser(logParser).parse(new ByteArrayInputStream(content.getBytes()));
+        TextParser.parse(logParser, new ByteArrayInputStream(content.getBytes()));
 
         Assert.assertEquals(2, logParser.getEntries().size());
         for (byte[] entry : logParser.getEntries()) {
@@ -128,7 +114,7 @@ public class NettyBufferParseTest {
             + "+--------+-------------------------------------------------+----------------+\n";
 
         NettyLogLineParser logParser = new NettyLogLineParser();
-        new TextParser(logParser).parse(new ByteArrayInputStream(content.getBytes()));
+        TextParser.parse(logParser, new ByteArrayInputStream(content.getBytes()));
 
         Assert.assertEquals(2, logParser.getEntries().size());
         byte[] buffer = logParser.getEntries().get(0);
@@ -142,6 +128,14 @@ public class NettyBufferParseTest {
         Assert.assertEquals(1, result.getContent().size());
         Assert.assertEquals(1, result.getContent().get(0).size());
         Assert.assertEquals("accept", result.getField(0, 0));
+    }
+
+    protected RpcRequest parseRequest(String content) throws Exception {
+        NettyLogLineParser logParser = new NettyLogLineParser();
+        TextParser.parse(logParser, new ByteArrayInputStream(content.getBytes()));
+        DecoderEmbedder<RpcRequest> e = new DecoderEmbedder<RpcRequest>(new RpcRequestDecoder());
+        e.offer(ChannelBuffers.copiedBuffer(logParser.getEntries().get(0)));
+        return e.poll();
     }
 
 }

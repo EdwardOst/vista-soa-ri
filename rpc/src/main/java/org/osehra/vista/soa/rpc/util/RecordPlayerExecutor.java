@@ -41,7 +41,7 @@ public class RecordPlayerExecutor implements VistaExecutor {
     public RecordPlayerExecutor(InputStream input) {
         NettyLogLineParser logParser = new NettyLogLineParser();
         try {
-            new TextParser(logParser).parse(input);
+            TextParser.parse(logParser, input);
         } catch (Exception e) {
             LOG.warn("Failed to parse input: {}", e.getMessage());
             return;

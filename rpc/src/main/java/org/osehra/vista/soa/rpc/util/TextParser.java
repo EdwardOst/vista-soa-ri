@@ -25,12 +25,16 @@ import java.util.Scanner;
  */
 public class TextParser {
     private final LineParser parser;
+    
+    public static void parse(LineParser parser, InputStream in) throws Exception {
+        new TextParser(parser).parse(in);
+    }
 
-    public TextParser(LineParser parser) {
+    protected TextParser(LineParser parser) {
         this.parser = parser;
     }
 
-    public void parse(InputStream in) throws Exception {
+    protected void parse(InputStream in) throws Exception {
         Scanner scanner = new Scanner(in);
         try {
             while (scanner.hasNextLine()) {
