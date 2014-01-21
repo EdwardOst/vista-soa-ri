@@ -25,6 +25,7 @@ public final class RpcRequest {
     private String code;
     private String version;
     private String name;
+    private String info;
     private final List<Parameter> parameters = new ArrayList<Parameter>();
 
     public String getNamespace() {
@@ -38,6 +39,9 @@ public final class RpcRequest {
     }
     public String getName() {
         return name;
+    }
+    public String getInfo() {
+        return info;
     }
     public List<Parameter> getParmeters() {
         return parameters;
@@ -57,6 +61,10 @@ public final class RpcRequest {
     }
     public RpcRequest name(String name) {
         this.name = name;
+        return this;
+    }
+    public RpcRequest info(String info) {
+        this.info = info;
         return this;
     }
     public RpcRequest parameter(Parameter param) {

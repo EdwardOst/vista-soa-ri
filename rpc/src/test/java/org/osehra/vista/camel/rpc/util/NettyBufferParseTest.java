@@ -66,7 +66,34 @@ public class NettyBufferParseTest {
     }
 
     @Test
-    public void testParseRequests() throws Exception {
+    public void testParseRequestNoParams() throws Exception {
+        String content = ""
+            + "+--------+-------------------------------------------------+----------------+\n"
+            + "|00000000| 5b 58 57 42 5d 31 30 33 30 34 05 23 42 59 45 23 |[XWB]10304.#BYE#|\n"
+            + "|00000010| 35 34 66 04                                     |54f.            |\n"
+            + "+--------+-------------------------------------------------+----------------+\n";
+
+        RpcRequest request = parseRequest(content);
+        Assert.assertNotNull(request);
+        Assert.assertEquals("#BYE#", request.getName());
+    }
+
+    @Test
+    public void testParseRequestOneWaySessionEnd() throws Exception {
+        String content = ""
+            + "+--------+-------------------------------------------------+----------------+\n"
+            + "|00000000| 31 39 33 30 37 20 4a 6f 62 20 65 6e 64 65 64 20 |19307 Job ended |\n"
+            + "|00000010| 57 65 64 20 4a 61 6e 20 30 31 20 30 30 3a 30 30 |Wed Jan 21 15:39|\n"
+            + "|00000020| 3a 30 30 20 45 53 54 20 32 30 31 34 0a          |:05 EST 2014.   |\n"
+            + "+--------+-------------------------------------------------+----------------+\n";
+
+        RpcRequest request = parseRequest(content);
+        Assert.assertNotNull(request);
+        Assert.assertEquals("Job ended Wed Jan 01 00:00:00 EST 2014", request.getInfo());
+    }
+
+    @Test
+    public void testParseMultipleRequests() throws Exception {
         String content = ""
             + "         +-------------------------------------------------+\n"
             + "         |  0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f |\n"
@@ -102,7 +129,7 @@ public class NettyBufferParseTest {
     }
 
     @Test
-    public void testParseResponses() throws Exception {
+    public void testParseMultipleResponses() throws Exception {
         String content = ""
             + "         +-------------------------------------------------+\n"
             + "         |  0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f |\n"

@@ -51,8 +51,15 @@ public class RpcClientHandler extends SimpleChannelUpstreamHandler {
     }
 
     @Override
-    public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e) {
+    public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
         LOG.debug("Channel connected");
+        super.channelConnected(ctx, e);
+    }
+
+    @Override
+    public void channelDisconnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
+        LOG.debug("Channel disconnected");
+        super.channelConnected(ctx, e);
     }
 
     @Override

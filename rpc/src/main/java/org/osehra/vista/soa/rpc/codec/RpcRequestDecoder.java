@@ -45,7 +45,7 @@ public class RpcRequestDecoder extends ReplayingDecoder<RpcRequestDecoder.State>
     private List<Parameter> params = new ArrayList<Parameter>();
 
     public RpcRequestDecoder() {
-        super(State.READ_NS);
+        super(State.READ_CODE);
     }
 
     @Override
@@ -53,36 +53,34 @@ public class RpcRequestDecoder extends ReplayingDecoder<RpcRequestDecoder.State>
 
         // TODO: improve logging so every byte received is traced
         switch (state) {
-        case READ_NS: {
-            byte b = buffer.readByte();
-            if (b != RpcConstants.NS_START) {
-                return readNotification(buffer, RpcConstants.DEF_FRAME_LEN);
-            }
-            int ridx = buffer.readerIndex();
-            int rbytes = actualReadableBytes();
-            int pos = buffer.indexOf(ridx, ridx + rbytes, (byte)RpcConstants.NS_STOP);
-            if (pos == -1) {
-                // Namespace delimiter (']') not found
-                if (rbytes > RpcConstants.MAX_NS_LEN) {
-                    throw new TooLongFrameException();
-                } else {
-                    // Wait until more data is received
-                    return null;
-                }
-            }
-            int len = pos - ridx;
-            if (len > RpcConstants.MAX_NS_LEN) {
-                throw new TooLongFrameException();
-            }
-            namespace = buffer.readBytes(len).toString(RpcCodecUtils.DEF_CHARSET);
-            buffer.skipBytes(1);
-
-            checkpoint(State.READ_CODE);
-        }
         case READ_CODE: {
-            // Code has a fixed size of 5 chars
-            code = buffer.readBytes(RpcConstants.CODE_LEN).toString(RpcCodecUtils.DEF_CHARSET);
+        	byte b = buffer.getByte(buffer.readerIndex());
+        	if (b == RpcConstants.NS_START) {
+        		if (namespace == null) {
+        	        // need to read the NS first
+                    checkpoint(State.READ_NS);
+                    return null;
+        		}
+                throw new CorruptedFrameException();
+        	}
+            // ASSUMPTION: code has a fixed size of 5 numeric chars even for the one way termination frame
+            String num = buffer.readBytes(RpcConstants.CODE_LEN).toString(RpcCodecUtils.DEF_CHARSET);
+
+            if (buffer.getByte(buffer.readerIndex()) == ' ') {
+            	// This must be the one way termination frame
+                buffer.skipBytes(1);  // skip the space
+                return new RpcRequest().code(num).info(readInfo(buffer, RpcConstants.DEF_FRAME_LEN));
+            }
+            code = num;
             checkpoint(State.READ_NAME);
+            return null;
+        }
+        case READ_NS: {
+            buffer.skipBytes(1);            // the '[' character
+            namespace = buffer.readBytes(RpcConstants.NS_LEN).toString(RpcCodecUtils.DEF_CHARSET);
+            buffer.skipBytes(1);            // likely the ']' character
+            checkpoint(State.READ_CODE);    // back to reading the code
+            return null;
         }
         case READ_NAME: {
             byte b = '\0';
@@ -93,7 +91,7 @@ public class RpcRequestDecoder extends ReplayingDecoder<RpcRequestDecoder.State>
                 }
                 String s = buffer.readBytes((int)b).toString(RpcCodecUtils.DEF_CHARSET);
                 if (version == null && s.charAt(0) >= '0' && s.charAt(0) <= '9') {
-                    // TODO: when is version mandatory and when is it optional, if ever?
+                    // TODO: when is version mandatory and when is it optional
                     version = s;
                 } else {
                     name = s;
@@ -104,25 +102,22 @@ public class RpcRequestDecoder extends ReplayingDecoder<RpcRequestDecoder.State>
         }
         case READ_PARAMS: {
             byte b = buffer.readByte();
-            if (b == RpcConstants.FRAME_STOP) {
-                // no parameters
-                break;
-            }
-            if (b != RpcConstants.PARAMS_START) {
-                throw new CorruptedFrameException("Expected either parameters or end of frame.");
-            }
-
-            boolean eot = false;
-            while (!eot) {
-                Parameter param = RpcCodecUtils.decodeParameter(buffer);
-                eot = param == null;
-                if (!eot) {
-                    params.add(param);
+            if (b != RpcConstants.FRAME_STOP) {
+                if (b != RpcConstants.PARAMS_START) {
+                    throw new CorruptedFrameException("Expected either parameters or end of frame.");
+                }
+                boolean eot = false;
+                while (!eot) {
+                    Parameter param = RpcCodecUtils.decodeParameter(buffer);
+                    eot = param == null;
+                    if (!eot) {
+                        params.add(param);
+                    }
                 }
             }
+
             RpcRequest request = new RpcRequest().namespace(namespace).code(code).name(name).version(version);
             request.getParmeters().addAll(params);
-
             reset();
             return request;
         }
@@ -130,8 +125,6 @@ public class RpcRequestDecoder extends ReplayingDecoder<RpcRequestDecoder.State>
             // Should not get here, all cases are handled
             throw new CorruptedFrameException();
         }
-
-        return null;
     }
 
     private void reset() {
@@ -140,14 +133,14 @@ public class RpcRequestDecoder extends ReplayingDecoder<RpcRequestDecoder.State>
         name = null;
         version = null;
         params.clear();
-        checkpoint(State.READ_NS);
+        checkpoint(State.READ_CODE);
     }
 
-    private static String readNotification(ChannelBuffer buffer, int maxLength) throws TooLongFrameException {
+    private static String readInfo(ChannelBuffer buffer, int maxLength) throws TooLongFrameException {
         StringBuilder sb = new StringBuilder(RpcConstants.DEF_FRAME_LEN);
         for (int i = 0; i < maxLength; i++) {
             byte nextByte = buffer.readByte();
-            if (nextByte == '\n') {
+            if (nextByte == RpcConstants.FRAME_STOP || nextByte == '\n') {
                 return sb.toString();
             }
             sb.append((char)nextByte);

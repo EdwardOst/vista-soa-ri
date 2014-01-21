@@ -20,7 +20,7 @@ import java.io.InputStream;
 import java.util.Scanner;
 
 /*
- * Parses an InputStream, splits it in lines that a parsed by a LineParser
+ * Parses an InputStream, splits it into lines and parses them using a LineParser
  * 
  */
 public class TextParser {
