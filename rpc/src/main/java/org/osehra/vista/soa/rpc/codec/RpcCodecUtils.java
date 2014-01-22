@@ -50,24 +50,30 @@ public final class RpcCodecUtils {
         ChannelBuffer cb = ChannelBuffers.dynamicBuffer();
         
         try {
-            cb.writeByte((byte) RpcConstants.NS_START);
-            cb.writeBytes(request.getNamespace().getBytes(DEF_CHARSET));
-            cb.writeByte((byte) RpcConstants.NS_STOP);
+            if (request.getInfo() != null) {
+                // in/only termination frame
+                cb.writeBytes(request.getCode().getBytes(DEF_CHARSET));
+                cb.writeByte((byte)' ');
+                cb.writeBytes(request.getInfo().getBytes(DEF_CHARSET));
+                cb.writeByte((byte)RpcConstants.FRAME_STOP);
+            } else {
+                cb.writeByte((byte)RpcConstants.NS_START);
+                cb.writeBytes(request.getNamespace().getBytes(DEF_CHARSET));
+                cb.writeByte((byte)RpcConstants.NS_STOP);
+                cb.writeBytes(request.getCode().getBytes(DEF_CHARSET));
+                encodeText(request.getVersion(), cb);
+                encodeText(request.getName(), cb);
 
-            cb.writeBytes(request.getCode().getBytes(DEF_CHARSET));
-            
-            encodeText(request.getVersion(), cb);
-            encodeText(request.getName(), cb);
-            
-            List<Parameter> params = request.getParmeters();
-            if (params.size() > 0 || encodeEmptyParamList) {
-                cb.writeByte((byte)RpcConstants.PARAMS_START);
-                if (params.size() > 0) {
-                    for (Parameter p : params) {
-                        encodeParameter(p, cb);
+                List<Parameter> params = request.getParmeters();
+                if (params.size() > 0 || encodeEmptyParamList) {
+                    cb.writeByte((byte)RpcConstants.PARAMS_START);
+                    if (params.size() > 0) {
+                        for (Parameter p : params) {
+                            encodeParameter(p, cb);
+                        }
+                    } else {
+                        encodeEmptyParameter(cb);
                     }
-                } else {
-                    encodeEmptyParameter(cb);
                 }
             }
             cb.writeByte((byte)RpcConstants.FRAME_STOP);
