@@ -33,6 +33,7 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
     <camel.version>2.12.2</camel.version>
+    <cxf.version>2.7.7</cxf.version>
     <jetty.version>7.6.9.v20130131</jetty.version>
     <junit.version>4.11</junit.version>
     <karaf.version>2.3.3</karaf.version>
@@ -88,7 +89,17 @@
       </dependency>
       <dependency>
         <groupId>org.apache.camel</groupId>
-        <artifactId>camel-spring</artifactId>
+        <artifactId>camel-cxf</artifactId>
+        <version>${camel.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.camel</groupId>
+        <artifactId>camel-cxf-transport</artifactId>
+        <version>${camel.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.camel</groupId>
+        <artifactId>camel-jetty</artifactId>
         <version>${camel.version}</version>
       </dependency>
       <dependency>
@@ -96,6 +107,12 @@
         <artifactId>camel-netty</artifactId>
         <version>${camel.version}</version>
       </dependency>
+      <dependency>
+        <groupId>org.apache.camel</groupId>
+        <artifactId>camel-spring</artifactId>
+        <version>${camel.version}</version>
+      </dependency>
+
       <dependency>
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-server</artifactId>
@@ -143,6 +160,11 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-test</artifactId>
+        <version>${camel.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.camel</groupId>
+        <artifactId>camel-test-spring</artifactId>
         <version>${camel.version}</version>
       </dependency>
     </dependencies>

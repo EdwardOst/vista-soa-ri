@@ -18,6 +18,8 @@ package org.osehra.vista.soa.rpc.codec;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,6 +46,19 @@ public final class RpcCodecUtils {
 
     public static ChannelBuffer encodeRequest(final RpcRequest request) {
         return encodeRequest(request, true);
+    }
+
+    public static String convertToFileman(Calendar date) {
+    	// FileMan internal date format: "YYYMMDD" where YYY = YYYY - 1700
+    	return date == null ? null : String.format("%1$03d%2$tm%2$td", date.get(Calendar.YEAR) - 1700, date);
+    }
+
+    public static Calendar convertFromFileman(String date) {
+		// TODO: should we assume or assert that date.length == 7?
+		return date == null ? null : new GregorianCalendar(
+			Integer.parseInt(date.substring(0, 3)) + 1700,
+			Integer.parseInt(date.substring(3, 5)) - 1, // months are 0 based
+			Integer.parseInt(date.substring(5, 7)));
     }
 
     public static ChannelBuffer encodeRequest(final RpcRequest request, boolean encodeEmptyParamList) {
