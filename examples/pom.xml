@@ -37,6 +37,7 @@
     <module>proxy-spring</module>
     <module>identity-proxy</module>
     <module>federated-identity</module>
+    <module>rest-service</module>
   </modules>
 
 </project>
